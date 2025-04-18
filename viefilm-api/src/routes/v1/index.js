@@ -1,11 +1,15 @@
 import express from "express";
-import { userRoute } from "@/routes/v1/userRouter";
+import { userRouter } from "@/routes/v1/userRouter";
 import { roleRouter } from "@/routes/v1/roleRouter";
+import { authRouter } from "@/routes/v1/authRouter";
 
 const Router = express.Router();
 
+// Auth APIs
+Router.use('/auth',authRouter);
+
 // User APIs
-Router.use('/users',userRoute);
+Router.use('/users',userRouter);
 
 // Role APIs
 Router.use('/roles',roleRouter);

@@ -15,7 +15,7 @@ const createRole = async (req, res, next) => {
       field: data.context.key, // Lấy tên trường bị lỗi
       message: data.message, // Lấy thông báo lỗi
     }));
-    res.status(422).json({ errors: errors });
+    res.status(422).json({statusCode:422,message:"Lỗi validation",errors: errors });
   }
 };
 

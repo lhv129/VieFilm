@@ -32,7 +32,7 @@ const create = async (reqBody) => {
       ...reqBody,
       roleId: memberRoleId._id.toString(),
       images:
-        "https://res.cloudinary.com/dewhibspm/image/upload/v1743700650/images_ejuu1z.jpg",
+        "https://res.cloudinary.com/dewhibspm/image/upload/v1745010004/default_twvy3l.jpg",
     };
 
     //Kiểm tra username và email đã tồn tại chưa

@@ -26,7 +26,9 @@ const USER_COLLECTION_SCHEMA = Joi.object({
   images: Joi.string().max(255).trim().default(null),
   fileImage: Joi.string().max(255).trim().strict().default(null),
   status: Joi.string().valid("active", "inactive", "block").default("inactive"),
-  remember_token: Joi.string().min(5).max(100),
+  remember_token: Joi.string().min(5).max(255),
+  refresh_token: Joi.string().min(5).max(255).default(null),
+  expired_refresh_token: Joi.date().timestamp("javascript").default(null),
   email_verified_at: Joi.date().timestamp("javascript").default(null),
   verification_token: Joi.date().timestamp("javascript").default(null),
   createdAt: Joi.date().timestamp("javascript").default(Date.now),
@@ -187,6 +189,17 @@ const getDelete = async (userId) => {
   }
 };
 
+const updateRefreshToken = async (id,refreshToken,expiredRefreshToken) => {
+  try {
+    const result = await GET_DB()
+      .collection(USER_COLLECTION_NAME)
+      .updateOne({ _id: new ObjectId(id) }, { $set: { refresh_token: refreshToken,expired_refresh_token:expiredRefreshToken } });
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
 export const userModel = {
   USER_COLLECTION_NAME,
   USER_COLLECTION_SCHEMA,
@@ -197,4 +210,5 @@ export const userModel = {
   getDetails,
   updatedUser,
   getDelete,
+  updateRefreshToken
 };

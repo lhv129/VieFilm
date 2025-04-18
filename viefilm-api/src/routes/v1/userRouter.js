@@ -18,4 +18,4 @@ Router.route("/:id")
   .put(userValidation.updateUser, userController.updateUser)
   .delete(userController.getDelete);
 
-export const userRoute = Router;
+export const userRouter = Router;
