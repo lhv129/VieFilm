@@ -3,6 +3,9 @@ import ApiError from "@/utils/ApiError";
 import { StatusCodes } from "http-status-codes";
 import { generateAccessToken, generateRefreshToken } from "@/utils/jwt";
 import { roleModel } from "@/models/roleModel";
+import { env } from "@/config/environment";
+import { v4 as uuidv4 } from 'uuid';
+import { sendEmail } from "@/utils/email";
 
 const login = async (reqBody) => {
     try {
@@ -17,10 +20,10 @@ const login = async (reqBody) => {
             throw new ApiError(StatusCodes.UNAUTHORIZED, "Mật khẩu không chính xác");
         }
 
-        if(user.status === 'inactive'){
+        if (user.status === 'inactive') {
             throw new ApiError(StatusCodes.FORBIDDEN, "Tài khoản của bạn chưa kích hoạt, vui lòng kiểm tra lại email để kích hoạt tài khoản");
         }
-        if(user.status === 'block'){
+        if (user.status === 'block') {
             throw new ApiError(StatusCodes.FORBIDDEN, "Tài khoản của bạn đã bị khóa, vui lòng liên hệ tới admin");
         }
 
@@ -51,11 +54,13 @@ const register = async (reqBody) => {
         const hashedPassword = bcrypt.hashSync(reqBody.password, saltRounds);
         reqBody.password = hashedPassword;
 
+        // Tạo token xác thực email
+        const verificationToken = uuidv4();
         const newUser = {
             ...reqBody,
             roleId: memberRoleId._id.toString(),
-            images:
-                "https://res.cloudinary.com/dewhibspm/image/upload/v1745010004/default_twvy3l.jpg",
+            images:"https://res.cloudinary.com/dewhibspm/image/upload/v1745010004/default_twvy3l.jpg",
+            email_verification_token: verificationToken
         };
 
         //Kiểm tra username và email đã tồn tại chưa
@@ -80,25 +85,53 @@ const register = async (reqBody) => {
             createdUser.insertedId.toString()
         );
 
-        // Tạo Access Token và Refresh Token
-        const accessToken = generateAccessToken(getNewUser);
-        let refreshToken = await generateRefreshToken(getNewUser);
-        const newUserForToken = {
-            access_token: accessToken,
-            refresh_token: refreshToken,
-            user: getNewUser
-        }
+        // Xây dựng liên kết xác thực
+        const verificationLink = `${env.CLIENT_URL}/v1/auth/verify-email/${verificationToken}`;
 
-        return newUserForToken;
+        // Nội dung email
+        const subject = 'Vui lòng xác thực địa chỉ email của bạn';
+        const body = `Chào ${newUser.username},<br><br>Vui lòng nhấp vào liên kết sau để xác thực địa chỉ email của bạn:<br><a href="${verificationLink}">${verificationLink}</a><br><br>Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email này.<br><br>Trân trọng,<br>Đội ngũ của bạn.`;
+
+        // Gửi email xác thực
+        await sendEmail(newUser.email, subject, body);
+
+        return getNewUser;
     } catch (error) {
         throw error;
     }
 }
 
+const verificationEmail = async (token) => {
+    let user = await userModel.findOne({email_verification_token:token});
+    if(!user){
+        throw new ApiError(StatusCodes.NOT_FOUND, "Token không hợp lệ");
+    }
+    user = {
+        ...user,
+        email_verification_token:null,
+        status: 'active',
+        email_verified_at: Date.now()
+    }
+
+    await userModel.updatedUser(user._id,user);
+
+    // Tạo Access Token và Refresh Token
+    const accessToken = generateAccessToken(user);
+    let refreshToken = await generateRefreshToken(user);
+    const newUser = {
+        status: "success",
+        message: "Xác thực email thành công",
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        user: user
+    }
+    return newUser;
+}
+
 const refreshToken = async (reqBody) => {
     try {
         const user = await userModel.findOne({ refresh_token: reqBody.refresh_token });
-        if(!user){
+        if (!user) {
             throw new ApiError(StatusCodes.NOT_FOUND, "Token không hợp lệ hoặc đã hết hạn");
         }
         const accessToken = generateAccessToken(user);
@@ -117,5 +150,6 @@ const refreshToken = async (reqBody) => {
 export const authService = {
     login,
     register,
-    refreshToken
+    refreshToken,
+    verificationEmail
 }

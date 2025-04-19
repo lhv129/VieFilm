@@ -30,7 +30,7 @@ const USER_COLLECTION_SCHEMA = Joi.object({
   refresh_token: Joi.string().min(5).max(255).default(null),
   expired_refresh_token: Joi.date().timestamp("javascript").default(null),
   email_verified_at: Joi.date().timestamp("javascript").default(null),
-  verification_token: Joi.date().timestamp("javascript").default(null),
+  email_verification_token: Joi.string().default(null),
   createdAt: Joi.date().timestamp("javascript").default(Date.now),
   updatedAt: Joi.date().timestamp("javascript").default(null),
   _deletedAt: Joi.boolean().default(false),
@@ -165,11 +165,11 @@ const updatedUser = async (userId, newUser) => {
     }
 
     // Cập nhật bản ghi
-    const updatedRole = await GET_DB()
+    const updatedUser = await GET_DB()
       .collection(USER_COLLECTION_NAME)
       .updateOne({ _id: new ObjectId(userId) }, { $set: newUser });
 
-    return updatedRole;
+    return updatedUser;
   } catch (error) {
     throw error;
   }
@@ -197,6 +197,17 @@ const updateRefreshToken = async (id, refreshToken, expiredRefreshToken) => {
   }
 }
 
+const updateOne = async (id,data) => {
+  try {
+    const result = await GET_DB()
+      .collection(USER_COLLECTION_NAME)
+      .updateOne({ _id: new ObjectId(id) }, { $set: { data } });
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const userModel = {
   USER_COLLECTION_NAME,
   USER_COLLECTION_SCHEMA,
@@ -207,5 +218,6 @@ export const userModel = {
   getDetails,
   updatedUser,
   getDelete,
-  updateRefreshToken
+  updateRefreshToken,
+  updateOne
 };

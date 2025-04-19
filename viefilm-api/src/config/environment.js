@@ -6,6 +6,7 @@ export const env = {
     APP_HOST: process.env.APP_HOST,
     APP_PORT: process.env.APP_PORT,
     APP: process.env.APP,
+    CLIENT_URL:process.env.CLIENT_URL,
 
 
     CLOUD_NAME: process.env.CLOUD_NAME,
@@ -17,4 +18,8 @@ export const env = {
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
     REFRESH_TOKEN_LIFE: process.env.REFRESH_TOKEN_LIFE,
     REFRESH_TOKEN_EXPIRED: process.env.REFRESH_TOKEN_EXPIRED,
+
+    EMAIL_SERVICE:process.env.EMAIL_SERVICE,
+    EMAIL_USERNAME:process.env.EMAIL_USERNAME,
+    EMAIL_PASSWORD:process.env.EMAIL_PASSWORD
 }
