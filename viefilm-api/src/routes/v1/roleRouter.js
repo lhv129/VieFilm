@@ -1,8 +1,11 @@
 import express from "express";
 import { roleValidation } from "@/validations/roleValidation";
 import { roleController } from "@/controllers/roleController";
+import { authenticateToken } from "@/middlewares/authMiddleware";
+import { roleMiddleware } from "@/middlewares/roleMiddleware";
 
 const Router = express.Router();
+Router.use(authenticateToken,roleMiddleware.checkRole('Admin'));
 
 Router.route("/")
   .get(roleController.getAll)

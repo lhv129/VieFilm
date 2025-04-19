@@ -38,17 +38,13 @@ const USER_COLLECTION_SCHEMA = Joi.object({
 
 const getAll = async () => {
   try {
-    const users = await GET_DB()
-      .collection(USER_COLLECTION_NAME)
-      .find({ _deletedAt: false })
+    const users = await GET_DB().collection(USER_COLLECTION_NAME)
+      .find(
+        { _deletedAt: false },
+        { projection: { _id: 1, username: 1, username: 1, fullname: 1, email: 1, roleId: 1, images: 1, fileImage: 1, phone: 1, address: 1, birthday: 1, status: 1, email_verified_at: 1 } }
+      )
       .toArray();
-    // Xóa trường password khỏi mỗi đối tượng người dùng
-    const usersWithoutPassword = users.map((user) => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
-
-    return usersWithoutPassword;
+    return users;
   } catch (error) {
     throw new Error(error);
   }
@@ -80,9 +76,10 @@ const findOneById = async (id) => {
   try {
     const result = await GET_DB()
       .collection(USER_COLLECTION_NAME)
-      .findOne({
-        _id: new ObjectId(id),
-      });
+      .findOne(
+        { _id: new ObjectId(id) },
+        { projection: { _id: 1, username: 1, username: 1, fullname: 1, email: 1, roleId: 1, images: 1, fileImage: 1, phone: 1, address: 1, birthday: 1, status: 1, email_verified_at: 1 } }
+      );
     return result;
   } catch (error) {
     throw new Error(error);
@@ -189,11 +186,11 @@ const getDelete = async (userId) => {
   }
 };
 
-const updateRefreshToken = async (id,refreshToken,expiredRefreshToken) => {
+const updateRefreshToken = async (id, refreshToken, expiredRefreshToken) => {
   try {
     const result = await GET_DB()
       .collection(USER_COLLECTION_NAME)
-      .updateOne({ _id: new ObjectId(id) }, { $set: { refresh_token: refreshToken,expired_refresh_token:expiredRefreshToken } });
+      .updateOne({ _id: new ObjectId(id) }, { $set: { refresh_token: refreshToken, expired_refresh_token: expiredRefreshToken } });
     return result;
   } catch (error) {
     throw new Error(error);
